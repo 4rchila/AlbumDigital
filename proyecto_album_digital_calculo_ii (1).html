@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Álbum Digital: Técnicas de Integración - Cálculo II</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Configuración de Tailwind para colores personalizados basados en la presentación -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#1a103c',
+                            purple: '#4a148c',
+                            magenta: '#c51162',
+                            light: '#f3e5f5'
+                        }
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Configuración de MathJax para renderizar fórmulas matemáticas LaTeX -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e, #4a00e0, #8e2de2);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism effects */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(197, 17, 98, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Nav links transition */
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(197, 17, 98, 0.8), rgba(74, 20, 140, 0.8));
+            border-left: 4px solid white;
+            font-weight: 600;
+        }
+        .nav-item:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Content fade animation */
+        .section-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .section-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(197, 17, 98, 0.6);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(197, 17, 98, 1);
+        }
+        
+        .math-container {
+            overflow-x: auto;
+            padding: 1rem 0;
+        }
+    </style>
+</head>
+<body class="antialiased flex h-screen overflow-hidden text-gray-100">
+
+    <aside class="w-72 glass-panel h-full flex flex-col z-20 flex-shrink-0">
+        <div class="p-6 border-b border-white/10 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-xl font-bold shadow-lg">
+                <i class="fa-solid fa-square-root-variable"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight tracking-wide">Cálculo II</h1>
+                <p class="text-xs text-brand-light/70 uppercase tracking-widest mt-1">Álbum Digital</p>
+            </div>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-2 px-3">
+                <li>
+                    <button onclick="showSection('inicio')" id="nav-inicio" class="nav-item active w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+                        <i class="fa-solid fa-home w-5 text-center"></i>
+                        <span>Inicio</span>
+                    </button>
+                </li>
+                <li class="pt-4 pb-2 px-4 text-xs font-semibold text-brand-light/50 uppercase tracking-wider">
+                    Técnicas
+                </li>
+                <li>
+                    <button onclick="showSection('t1')" id="nav-t1" class="nav-item w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+                        <i class="fa-solid fa-1 w-5 text-center text-pink-400"></i>
+                        <span>Sustitución Simple</span>
+                    </button>
+                </li>
+                <li>
+                    <button onclick="showSection('t2')" id="nav-t2" class="nav-item w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+                        <i class="fa-solid fa-2 w-5 text-center text-pink-400"></i>
+                        <span>Integración por Partes</span>
+                    </button>
+                </li>
+                <li>
+                    <button onclick="showSection('t3')" id="nav-t3" class="nav-item w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+                        <i class="fa-solid fa-3 w-5 text-center text-pink-400"></i>
+                        <span>Integrales Trigonométricas</span>
+                    </button>
+                </li>
+                <li>
+                    <button onclick="showSection('t4')" id="nav-t4" class="nav-item w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+                        <i class="fa-solid fa-4 w-5 text-center text-pink-400"></i>
+                        <span>Sustitución Trigonométrica</span>
+                    </button>
+                </li>
+                <li>
+                    <button onclick="showSection('t5')" id="nav-t5" class="nav-item w-full text-left px-4 py-3 rounded-md flex items-center gap-3">
+                        <i class="fa-solid fa-5 w-5 text-center text-pink-400"></i>
+                        <span>Fracciones Parciales</span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="p-4 border-t border-white/10 text-xs text-center text-white/50">
+            <p>Universidad Rafael Landívar</p>
+            <p class="mt-1">Facultad de Ingeniería</p>
+        </div>
+    </aside>
+
+    <main class="flex-1 h-full overflow-y-auto relative">
+        <div class="max-w-6xl mx-auto p-8 lg:p-12 pb-24">
+            
+            <section id="inicio" class="section-content active">
+                <div class="glass-panel rounded-2xl p-10 md:p-16 text-center shadow-2xl relative overflow-hidden mt-10">
+                    <div class="absolute -top-24 -right-24 w-64 h-64 bg-pink-600 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+                    <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="inline-block p-4 rounded-xl bg-white/10 backdrop-blur-sm mb-6 border border-white/20 shadow-lg">
+                            <i class="fa-solid fa-graduation-cap text-5xl text-pink-400 drop-shadow-md"></i>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight uppercase bg-clip-text text-transparent bg-gradient-to-r from-white via-pink-200 to-white">
+                            Proyecto de Álbum Digital:<br>
+                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Técnicas de Integración</span>
+                        </h1>
+                        <h2 class="text-2xl font-light mb-8 text-purple-200">Cálculo II</h2>
+                        
+                        <div class="w-24 h-1 bg-gradient-to-r from-pink-500 to-purple-500 mx-auto mb-8 rounded-full"></div>
+                        
+                        <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-12 font-light">
+                            Exploración detallada e interactiva de los cinco métodos fundamentales para resolver integrales indefinidas y definidas, con aplicaciones prácticas en el cálculo de área entre curvas.
+                        </p>
+                        
+                        <div class="glass-card max-w-2xl mx-auto p-8 rounded-2xl border-t-4 border-t-pink-500 mb-8 backdrop-blur-md bg-white/5">
+                            <h3 class="text-sm font-semibold text-purple-300 uppercase tracking-[0.3em] mb-3">Presentado por</h3>
+                            <p class="text-3xl md:text-4xl font-bold text-white mb-4">German Juan Carlos Archila Batz</p>
+                            <div class="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-black/30 border border-pink-500/30 shadow-[0_0_15px_rgba(197,17,98,0.2)]">
+                                <i class="fa-solid fa-id-badge text-pink-400 text-xl"></i>
+                                <span class="font-mono text-lg text-pink-100 tracking-wider">Carné: 1526824</span>
+                            </div>
+                        </div>
+                        
+                        <button onclick="showSection('t1')" class="mt-8 px-8 py-4 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full font-bold text-lg hover:shadow-[0_0_20px_rgba(197,17,98,0.6)] transition-all transform hover:scale-105">
+                            Comenzar Exploración <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="t1" class="section-content">
+                <div class="mb-10 text-center">
+                    <span class="inline-block py-1 px-3 rounded-full bg-pink-500/20 text-pink-300 text-sm font-bold tracking-widest mb-3 border border-pink-500/30">TÉCNICA 01</span>
+                    <h2 class="text-4xl font-extrabold uppercase tracking-tight">Sustitución Simple</h2>
+                    <p class="text-xl text-brand-light/70 mt-2 font-light">Cambio de Variable (Regla de la Cadena Inversa)</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Concepto -->
+                    <div class="glass-card p-8 rounded-2xl">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300"><i class="fa-solid fa-book-open"></i></div>
+                            <h3 class="text-2xl font-bold">Concepto</h3>
+                        </div>
+                        <p class="text-gray-300 leading-relaxed text-justify mb-4">
+                            La sustitución simple o cambio de variable es una técnica fundamental que revierte la regla de la cadena de la derivación. Consiste en transformar una integral complicada en una más simple mediante la introducción de una nueva variable, comúnmente llamada $u$.
+                        </p>
+                        <h4 class="font-bold text-pink-300 mt-4 mb-2">¿Cuándo utilizarla?</h4>
+                        <p class="text-gray-300 text-sm">
+                            Se utiliza cuando en el integrando aparece una función y también, multiplicando, la derivada de esa función (o un múltiplo escalar de ella). Es ideal para funciones compuestas.
+                        </p>
+                    </div>
+
+                    <!-- Fórmulas -->
+                    <div class="glass-card p-8 rounded-2xl flex flex-col justify-center text-center">
+                        <div class="flex items-center justify-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-300"><i class="fa-solid fa-calculator"></i></div>
+                            <h3 class="text-2xl font-bold">Fórmula Clave</h3>
+                        </div>
+                        <div class="math-container bg-black/30 p-6 rounded-xl border border-white/10 text-xl">
+                            $$ \int f(g(x)) \cdot g'(x) dx = \int f(u) du $$
+                        </div>
+                        <p class="text-sm text-gray-400 mt-4">Donde elegimos $u = g(x)$, de modo que su diferencial es $du = g'(x) dx$.</p>
+                    </div>
+                </div>
+
+                <!-- Ejemplo Paso a Paso -->
+                <div class="glass-card p-8 rounded-2xl mb-6">
+                    <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+                        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-300"><i class="fa-solid fa-pen-to-square"></i></div>
+                        <h3 class="text-2xl font-bold">Ejemplo Resuelto Paso a Paso</h3>
+                    </div>
+                    <p class="mb-4 text-lg">Evalúe la siguiente integral indefinida:</p>
+                    <div class="math-container mb-6 text-xl text-center">
+                        $$ \int \frac{6x^2}{\sqrt{2x^3 + 5}} dx $$
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-pink-500">
+                            <h4 class="font-bold text-pink-300">Paso 1: Identificar $u$ y calcular $du$</h4>
+                            <p class="text-sm mt-1">Elegimos la expresión dentro de la raíz porque su derivada (grado 2) está presente en el numerador.</p>
+                            <p class="math-container text-center">Sea $u = 2x^3 + 5$</p>
+                            <p class="math-container text-center">Derivando: $du = 6x^2 dx$</p>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-purple-500">
+                            <h4 class="font-bold text-purple-300">Paso 2: Sustituir en la integral original</h4>
+                            <p class="text-sm mt-1">Reemplazamos la expresión en términos de $u$. Observe cómo $6x^2 dx$ es exactamente $du$.</p>
+                            <p class="math-container text-center">$$ \int \frac{1}{\sqrt{u}} du $$</p>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-blue-500">
+                            <h4 class="font-bold text-blue-300">Paso 3: Integrar usando reglas básicas</h4>
+                            <p class="text-sm mt-1">Reescribimos la raíz como exponente fraccionario y aplicamos la regla de la potencia: $\int u^n du = \frac{u^{n+1}}{n+1}$</p>
+                            <p class="math-container text-center">$$ \int u^{-1/2} du = \frac{u^{1/2}}{1/2} + C = 2u^{1/2} + C $$</p>
+                        </div>
+
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-green-500">
+                            <h4 class="font-bold text-green-300">Paso 4: Volver a la variable original $x$</h4>
+                            <p class="text-sm mt-1">Sustituimos $u$ de vuelta por $2x^3 + 5$.</p>
+                            <p class="math-container text-center font-bold text-lg text-yellow-300">$$ = 2\sqrt{2x^3 + 5} + C $$</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aplicación a Área -->
+                <div class="glass-card p-8 rounded-2xl border-t-4 border-t-pink-500">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-300"><i class="fa-solid fa-chart-area"></i></div>
+                        <h3 class="text-2xl font-bold">Aplicación: Área entre curvas</h3>
+                    </div>
+                    <p class="mb-4">Calcule el área de la región acotada por la curva $y = x e^{x^2}$, el eje $x$ ($y=0$), y las rectas $x=0$ y $x=1$.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <p class="text-sm text-gray-300 mb-2"><strong>Planteamiento de la integral definida:</strong></p>
+                            <p class="math-container text-center bg-black/20 rounded p-2">$$ A = \int_{0}^{1} x e^{x^2} dx $$</p>
+                            
+                            <p class="text-sm text-gray-300 mt-4 mb-2"><strong>Aplicando Sustitución:</strong></p>
+                            <ul class="text-sm space-y-2 text-gray-300">
+                                <li>$u = x^2$</li>
+                                <li>$du = 2x dx \implies \frac{du}{2} = x dx$</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-300 mb-2"><strong>Cambio de límites:</strong></p>
+                            <ul class="text-sm space-y-1 text-gray-300">
+                                <li>Si $x=0 \implies u=0^2=0$</li>
+                                <li>Si $x=1 \implies u=1^2=1$</li>
+                            </ul>
+                            
+                            <p class="text-sm text-gray-300 mt-4 mb-2"><strong>Resolución final:</strong></p>
+                            <p class="math-container text-center text-yellow-300 font-bold bg-black/20 rounded p-2">
+                                $$ A = \int_{0}^{1} e^u \frac{du}{2} = \frac{1}{2} [e^u]_0^1 = \frac{1}{2}(e^1 - e^0) = \frac{e - 1}{2} \approx 0.859 \text{ u}^2 $$
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="t2" class="section-content">
+                <div class="mb-10 text-center">
+                    <span class="inline-block py-1 px-3 rounded-full bg-purple-500/20 text-purple-300 text-sm font-bold tracking-widest mb-3 border border-purple-500/30">TÉCNICA 02</span>
+                    <h2 class="text-4xl font-extrabold uppercase tracking-tight">Integración por Partes</h2>
+                    <p class="text-xl text-brand-light/70 mt-2 font-light">Revirtiendo la regla del producto</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="glass-card p-8 rounded-2xl">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300"><i class="fa-solid fa-puzzle-piece"></i></div>
+                            <h3 class="text-2xl font-bold">Concepto</h3>
+                        </div>
+                        <p class="text-gray-300 leading-relaxed text-justify mb-4">
+                            La integración por partes es un método derivado de la regla del producto para derivadas. Nos permite transformar la integral de un producto de funciones en otra integral que, idealmente, sea más sencilla de resolver.
+                        </p>
+                        <h4 class="font-bold text-pink-300 mt-4 mb-2">¿Cuándo utilizarla?</h4>
+                        <p class="text-gray-300 text-sm">
+                            Cuando el integrando es un producto de dos familias diferentes de funciones (ej. un polinomio por una exponencial, o un polinomio por una función trigonométrica). Usamos la regla mnemotécnica <strong>ILATE</strong> para elegir $u$: <strong>I</strong>nversas, <strong>L</strong>ogarítmicas, <strong>A</strong>lgebraicas, <strong>T</strong>rigonométricas, <strong>E</strong>xponenciales.
+                        </p>
+                    </div>
+
+                    <div class="glass-card p-8 rounded-2xl flex flex-col justify-center text-center">
+                        <div class="flex items-center justify-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-300"><i class="fa-solid fa-subscript"></i></div>
+                            <h3 class="text-2xl font-bold">Fórmula Clave</h3>
+                        </div>
+                        <div class="math-container bg-black/30 p-6 rounded-xl border border-white/10 text-xl">
+                            $$ \int u \, dv = u \cdot v - \int v \, du $$
+                        </div>
+                        <p class="text-sm text-gray-400 mt-4 text-left">
+                            <strong>Estrategia:</strong> <br>
+                            1. Elegir $u$ (fácil de derivar).<br>
+                            2. Elegir $dv$ (fácil de integrar).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 rounded-2xl mb-6">
+                    <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+                        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-300"><i class="fa-solid fa-pen-to-square"></i></div>
+                        <h3 class="text-2xl font-bold">Ejemplo Resuelto Paso a Paso</h3>
+                    </div>
+                    <p class="mb-4 text-lg">Evalúe la siguiente integral:</p>
+                    <div class="math-container mb-6 text-xl text-center">
+                        $$ \int x \ln(x) dx $$
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-pink-500">
+                            <h4 class="font-bold text-pink-300">Paso 1: Elección de $u$ y $dv$ mediante ILATE</h4>
+                            <p class="text-sm mt-1">Tenemos una función Algebraica ($x$) y una Logarítmica ($\ln(x)$). Según ILATE, "L" va antes que "A", así que $u$ será el logaritmo.</p>
+                            <div class="flex justify-center gap-12 mt-2">
+                                <div>
+                                    <p class="math-container text-center">Sea $u = \ln(x)$</p>
+                                    <p class="math-container text-center">$\implies du = \frac{1}{x} dx$</p>
+                                </div>
+                                <div>
+                                    <p class="math-container text-center">Sea $dv = x dx$</p>
+                                    <p class="math-container text-center">$\implies v = \int x dx = \frac{x^2}{2}$</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-purple-500">
+                            <h4 class="font-bold text-purple-300">Paso 2: Aplicar la fórmula $\int u \, dv = uv - \int v \, du$</h4>
+                            <p class="math-container text-center">$$ = \ln(x) \left(\frac{x^2}{2}\right) - \int \left(\frac{x^2}{2}\right) \left(\frac{1}{x}\right) dx $$</p>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-blue-500">
+                            <h4 class="font-bold text-blue-300">Paso 3: Simplificar y resolver la nueva integral</h4>
+                            <p class="text-sm mt-1">La nueva integral es mucho más simple que la original.</p>
+                            <p class="math-container text-center">$$ = \frac{x^2}{2}\ln(x) - \frac{1}{2} \int x dx $$</p>
+                            <p class="math-container text-center font-bold text-lg text-yellow-300">$$ = \frac{x^2}{2}\ln(x) - \frac{1}{2} \left(\frac{x^2}{2}\right) + C = \frac{x^2}{2}\ln(x) - \frac{x^2}{4} + C $$</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 rounded-2xl border-t-4 border-t-pink-500">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-300"><i class="fa-solid fa-chart-area"></i></div>
+                        <h3 class="text-2xl font-bold">Aplicación: Área entre curvas</h3>
+                    </div>
+                    <p class="mb-4">Calcule el área bajo la curva $y = x e^x$ en el intervalo $[0, 1]$. Es decir, el área acotada por $y=x e^x$, $y=0$, $x=0$, $x=1$.</p>
+                    
+                    <div class="bg-black/20 p-4 rounded-lg mb-4">
+                        <p class="text-sm text-gray-300 mb-2"><strong>1. Planteamiento:</strong> $A = \int_{0}^{1} x e^x dx$</p>
+                        <p class="text-sm text-gray-300 mb-2"><strong>2. Partes:</strong> $u = x \implies du = dx$, y $dv = e^x dx \implies v = e^x$</p>
+                        <p class="text-sm text-gray-300 mb-2"><strong>3. Resolución de la indefinida:</strong> $\int x e^x dx = x e^x - \int e^x dx = x e^x - e^x = e^x(x - 1)$</p>
+                    </div>
+                    
+                    <p class="text-sm text-gray-300 mt-4 mb-2 text-center"><strong>Evaluando los límites de integración (Teorema Fundamental del Cálculo):</strong></p>
+                    <p class="math-container text-center text-yellow-300 font-bold bg-black/20 rounded p-4 text-xl">
+                        $$ A = \left[ e^x(x - 1) \right]_0^1 = (e^1(1 - 1)) - (e^0(0 - 1)) = 0 - (1(-1)) = 1 \text{ u}^2 $$
+                    </p>
+                </div>
+            </section>
+
+            <section id="t3" class="section-content">
+                <div class="mb-10 text-center">
+                    <span class="inline-block py-1 px-3 rounded-full bg-blue-500/20 text-blue-300 text-sm font-bold tracking-widest mb-3 border border-blue-500/30">TÉCNICA 03</span>
+                    <h2 class="text-4xl font-extrabold uppercase tracking-tight">Integrales Trigonométricas</h2>
+                    <p class="text-xl text-brand-light/70 mt-2 font-light">Manipulación algebraica de identidades</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="glass-card p-8 rounded-2xl">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300"><i class="fa-solid fa-wave-square"></i></div>
+                            <h3 class="text-2xl font-bold">Concepto</h3>
+                        </div>
+                        <p class="text-gray-300 leading-relaxed text-justify mb-4">
+                            Técnica utilizada para resolver integrales que contienen potencias de funciones trigonométricas. Se basa fuertemente en el uso de identidades trigonométricas para reescribir el integrando de manera que se pueda aplicar una sustitución simple.
+                        </p>
+                        <h4 class="font-bold text-pink-300 mt-4 mb-2">¿Cuándo utilizarla?</h4>
+                        <p class="text-gray-300 text-sm">
+                            Cuando encontramos integrandos de la forma $\sin^m(x)\cos^n(x)$, o $\tan^m(x)\sec^n(x)$. La estrategia depende de si los exponentes $m$ y $n$ son pares o impares.
+                        </p>
+                    </div>
+
+                    <div class="glass-card p-8 rounded-2xl flex flex-col justify-center text-center">
+                        <div class="flex items-center justify-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-300"><i class="fa-solid fa-list-check"></i></div>
+                            <h3 class="text-2xl font-bold">Identidades Clave</h3>
+                        </div>
+                        <div class="bg-black/30 p-4 rounded-xl border border-white/10 text-sm mb-2">
+                            <strong>Pitagóricas:</strong><br>
+                            $$ \sin^2(x) + \cos^2(x) = 1 $$
+                            $$ \sec^2(x) = 1 + \tan^2(x) $$
+                        </div>
+                        <div class="bg-black/30 p-4 rounded-xl border border-white/10 text-sm">
+                            <strong>Ángulo Mitad (Reducción de potencias pares):</strong><br>
+                            $$ \sin^2(x) = \frac{1 - \cos(2x)}{2} \quad, \quad \cos^2(x) = \frac{1 + \cos(2x)}{2} $$
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 rounded-2xl mb-6">
+                    <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+                        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-300"><i class="fa-solid fa-pen-to-square"></i></div>
+                        <h3 class="text-2xl font-bold">Ejemplo Resuelto Paso a Paso</h3>
+                    </div>
+                    <p class="mb-4 text-lg">Resolver la integral de potencia impar:</p>
+                    <div class="math-container mb-6 text-xl text-center">
+                        $$ \int \sin^3(x) \cos^2(x) dx $$
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-pink-500">
+                            <h4 class="font-bold text-pink-300">Paso 1: Separar un factor</h4>
+                            <p class="text-sm mt-1">Como la potencia del seno es impar (3), separamos un $\sin(x)$ para que sirva como parte de $du$.</p>
+                            <p class="math-container text-center">$$ \int \sin^2(x) \cos^2(x) \cdot \sin(x) dx $$</p>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-purple-500">
+                            <h4 class="font-bold text-purple-300">Paso 2: Aplicar identidad pitagórica</h4>
+                            <p class="text-sm mt-1">Convertimos el $\sin^2(x)$ restante a cosenos: $\sin^2(x) = 1 - \cos^2(x)$.</p>
+                            <p class="math-container text-center">$$ \int (1 - \cos^2(x)) \cos^2(x) \cdot \sin(x) dx $$</p>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-blue-500">
+                            <h4 class="font-bold text-blue-300">Paso 3: Sustitución Simple</h4>
+                            <p class="text-sm mt-1">Sea $u = \cos(x) \implies du = -\sin(x) dx \implies -du = \sin(x) dx$.</p>
+                            <p class="math-container text-center">$$ \int (1 - u^2) u^2 (-du) = \int (u^4 - u^2) du $$</p>
+                        </div>
+
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-green-500">
+                            <h4 class="font-bold text-green-300">Paso 4: Integrar y devolver a $x$</h4>
+                            <p class="math-container text-center">$$ = \frac{u^5}{5} - \frac{u^3}{3} + C $$</p>
+                            <p class="math-container text-center font-bold text-lg text-yellow-300">$$ = \frac{\cos^5(x)}{5} - \frac{\cos^3(x)}{3} + C $$</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 rounded-2xl border-t-4 border-t-pink-500">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-300"><i class="fa-solid fa-chart-area"></i></div>
+                        <h3 class="text-2xl font-bold">Aplicación: Área entre curvas</h3>
+                    </div>
+                    <p class="mb-4">Encontrar el área bajo un "arco" de la función $y = \sin^2(x)$ en el intervalo de $[0, \pi]$.</p>
+                    
+                    <div class="bg-black/20 p-4 rounded-lg">
+                        <p class="text-sm text-gray-300 mb-2"><strong>Planteamiento:</strong> Al ser el exponente par, requerimos la identidad del ángulo mitad.</p>
+                        <p class="math-container text-center text-lg">
+                            $$ A = \int_{0}^{\pi} \sin^2(x) dx = \int_{0}^{\pi} \frac{1 - \cos(2x)}{2} dx $$
+                        </p>
+                        <p class="math-container text-center text-lg mt-2">
+                            $$ = \frac{1}{2} \int_{0}^{\pi} (1 - \cos(2x)) dx = \frac{1}{2} \left[ x - \frac{\sin(2x)}{2} \right]_0^\pi $$
+                        </p>
+                        <p class="math-container text-center text-yellow-300 font-bold mt-4 text-xl bg-black/30 p-2 rounded">
+                            $$ A = \frac{1}{2} \left( \left(\pi - \frac{\sin(2\pi)}{2}\right) - \left(0 - \frac{\sin(0)}{2}\right) \right) = \frac{\pi}{2} \text{ u}^2 $$
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="t4" class="section-content">
+                <div class="mb-10 text-center">
+                    <span class="inline-block py-1 px-3 rounded-full bg-green-500/20 text-green-300 text-sm font-bold tracking-widest mb-3 border border-green-500/30">TÉCNICA 04</span>
+                    <h2 class="text-4xl font-extrabold uppercase tracking-tight">Sustitución Trigonométrica</h2>
+                    <p class="text-xl text-brand-light/70 mt-2 font-light">Eliminando radicales con trigonometría</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="glass-card p-8 rounded-2xl">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300"><i class="fa-solid fa-shapes"></i></div>
+                            <h3 class="text-2xl font-bold">Concepto</h3>
+                        </div>
+                        <p class="text-gray-300 leading-relaxed text-justify mb-4">
+                            Técnica que permite transformar expresiones algebraicas, especialmente aquellas que contienen radicales de sumas o diferencias de cuadrados, en integrales de funciones trigonométricas. Se basa en el Teorema de Pitágoras.
+                        </p>
+                        <h4 class="font-bold text-pink-300 mt-4 mb-2">¿Cuándo utilizarla?</h4>
+                        <p class="text-gray-300 text-sm">
+                            Cuando el integrando contiene expresiones de la forma $\sqrt{a^2 - x^2}$, $\sqrt{a^2 + x^2}$, o $\sqrt{x^2 - a^2}$. Se asocia una variable $x$ a un lado de un triángulo rectángulo en función de un ángulo $\theta$.
+                        </p>
+                    </div>
+
+                    <div class="glass-card p-8 rounded-2xl flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-4 border-b border-white/10 pb-2">
+                            <div class="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-300"><i class="fa-solid fa-table"></i></div>
+                            <h3 class="text-xl font-bold">Casos (Fórmulas Clave)</h3>
+                        </div>
+                        <ul class="space-y-3 text-sm">
+                            <li class="bg-black/30 p-2 rounded border-l-4 border-pink-400">
+                                <strong>Para $\sqrt{a^2 - x^2}$:</strong> Sustituir $x = a \sin(\theta)$ <br> 
+                                Identidad: $1 - \sin^2\theta = \cos^2\theta$
+                            </li>
+                            <li class="bg-black/30 p-2 rounded border-l-4 border-purple-400">
+                                <strong>Para $\sqrt{a^2 + x^2}$:</strong> Sustituir $x = a \tan(\theta)$ <br>
+                                Identidad: $1 + \tan^2\theta = \sec^2\theta$
+                            </li>
+                            <li class="bg-black/30 p-2 rounded border-l-4 border-blue-400">
+                                <strong>Para $\sqrt{x^2 - a^2}$:</strong> Sustituir $x = a \sec(\theta)$ <br>
+                                Identidad: $\sec^2\theta - 1 = \tan^2\theta$
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 rounded-2xl mb-6">
+                    <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+                        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-300"><i class="fa-solid fa-pen-to-square"></i></div>
+                        <h3 class="text-2xl font-bold">Ejemplo Resuelto Paso a Paso</h3>
+                    </div>
+                    <div class="math-container mb-6 text-xl text-center">
+                        $$ \int \frac{\sqrt{9 - x^2}}{x^2} dx $$
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-pink-500">
+                            <h4 class="font-bold text-pink-300">Paso 1: Identificar caso y realizar sustitución</h4>
+                            <p class="text-sm mt-1">Vemos el patrón $\sqrt{a^2 - x^2}$ con $a=3$.</p>
+                            <p class="math-container text-center">Sea $x = 3\sin(\theta) \implies dx = 3\cos(\theta) d\theta$</p>
+                            <p class="math-container text-center">$\sqrt{9 - x^2} = \sqrt{9 - 9\sin^2\theta} = \sqrt{9(1-\sin^2\theta)} = 3\cos\theta$</p>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-purple-500">
+                            <h4 class="font-bold text-purple-300">Paso 2: Reemplazar en la integral y simplificar</h4>
+                            <p class="math-container text-center">$$ \int \frac{3\cos\theta}{(3\sin\theta)^2} (3\cos\theta) d\theta = \int \frac{9\cos^2\theta}{9\sin^2\theta} d\theta = \int \cot^2\theta d\theta $$</p>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-blue-500">
+                            <h4 class="font-bold text-blue-300">Paso 3: Integrar usando identidades</h4>
+                            <p class="text-sm mt-1">Usamos la identidad $\cot^2\theta = \csc^2\theta - 1$.</p>
+                            <p class="math-container text-center">$$ \int (\csc^2\theta - 1) d\theta = -\cot\theta - \theta + C $$</p>
+                        </div>
+
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-green-500">
+                            <h4 class="font-bold text-green-300">Paso 4: Deshacer la sustitución usando el triángulo</h4>
+                            <p class="text-sm mt-1">Si $\sin\theta = \frac{x}{3}$ (Cateto Opuesto = x, Hipotenusa = 3), por Pitágoras, Cateto Adyacente = $\sqrt{9-x^2}$.<br>
+                            Entonces, $\cot\theta = \frac{C.A.}{C.O.} = \frac{\sqrt{9-x^2}}{x}$ y $\theta = \arcsin\left(\frac{x}{3}\right)$.</p>
+                            <p class="math-container text-center font-bold text-lg text-yellow-300">$$ = -\frac{\sqrt{9-x^2}}{x} - \arcsin\left(\frac{x}{3}\right) + C $$</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 rounded-2xl border-t-4 border-t-pink-500">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-300"><i class="fa-solid fa-chart-area"></i></div>
+                        <h3 class="text-2xl font-bold">Aplicación: Área del Círculo</h3>
+                    </div>
+                    <p class="mb-4">Use integración para calcular el área del cuadrante superior derecho de un círculo de radio $r=3$, cuya ecuación superior es $y = \sqrt{9 - x^2}$.</p>
+                    
+                    <div class="bg-black/20 p-4 rounded-lg grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div>
+                            <p class="text-sm text-gray-300 mb-2"><strong>Planteamiento:</strong></p>
+                            <p class="math-container text-center text-lg">
+                                $$ A = \int_{0}^{3} \sqrt{9 - x^2} dx $$
+                            </p>
+                            <p class="text-sm text-gray-300 mt-2">Usando $x = 3\sin\theta \implies dx = 3\cos\theta d\theta$<br>
+                            Límites: si $x=0, \theta=0$; si $x=3, \theta=\pi/2$.</p>
+                        </div>
+                        <div class="border-l border-white/20 pl-4">
+                            <p class="math-container text-center text-lg">
+                                $$ \int_{0}^{\pi/2} (3\cos\theta)(3\cos\theta) d\theta $$
+                                $$ = 9 \int_{0}^{\pi/2} \cos^2\theta d\theta $$
+                                $$ = 9 \int_{0}^{\pi/2} \frac{1+\cos(2\theta)}{2} d\theta $$
+                            </p>
+                            <p class="math-container text-center text-yellow-300 font-bold mt-2 bg-black/30 p-2 rounded">
+                                $$ A = \frac{9}{2} \left[ \theta + \frac{\sin(2\theta)}{2} \right]_0^{\pi/2} = \frac{9\pi}{4} \text{ u}^2 $$
+                            </p>
+                            <p class="text-xs text-center text-gray-400 mt-1">(Exactamente una cuarta parte del área total $\pi r^2 = 9\pi$).</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="t5" class="section-content">
+                <div class="mb-10 text-center">
+                    <span class="inline-block py-1 px-3 rounded-full bg-yellow-500/20 text-yellow-300 text-sm font-bold tracking-widest mb-3 border border-yellow-500/30">TÉCNICA 05</span>
+                    <h2 class="text-4xl font-extrabold uppercase tracking-tight">Fracciones Parciales</h2>
+                    <p class="text-xl text-brand-light/70 mt-2 font-light">Descomposición de funciones racionales</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="glass-card p-8 rounded-2xl">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300"><i class="fa-solid fa-code-branch"></i></div>
+                            <h3 class="text-2xl font-bold">Concepto</h3>
+                        </div>
+                        <p class="text-gray-300 leading-relaxed text-justify mb-4">
+                            Técnica algebraica que permite descomponer el cociente de dos polinomios (función racional) en una suma de fracciones más simples (fracciones parciales) que son fáciles de integrar mediante logaritmos naturales o arco tangentes.
+                        </p>
+                        <h4 class="font-bold text-pink-300 mt-4 mb-2">¿Cuándo utilizarla?</h4>
+                        <p class="text-gray-300 text-sm">
+                            Cuando se requiere integrar una función racional $f(x) = \frac{P(x)}{Q(x)}$ donde el grado del polinomio del numerador $P(x)$ es menor que el grado del denominador $Q(x)$, y $Q(x)$ es factorizable en términos lineales y/o cuadráticos irreducibles.
+                        </p>
+                    </div>
+
+                    <div class="glass-card p-8 rounded-2xl flex flex-col justify-center">
+                        <div class="flex items-center justify-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-300"><i class="fa-solid fa-layer-group"></i></div>
+                            <h3 class="text-2xl font-bold">Tipos de Factores en Q(x)</h3>
+                        </div>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li><i class="fa-solid fa-arrow-right text-pink-400 mr-2"></i><strong>Lineales distintos:</strong> $\frac{A}{ax+b}$</li>
+                            <li><i class="fa-solid fa-arrow-right text-pink-400 mr-2"></i><strong>Lineales repetidos:</strong> $\frac{A_1}{ax+b} + \frac{A_2}{(ax+b)^2} + \dots$</li>
+                            <li><i class="fa-solid fa-arrow-right text-purple-400 mr-2"></i><strong>Cuadráticos irreducibles:</strong> $\frac{Ax+B}{ax^2+bx+c}$</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 rounded-2xl mb-6">
+                    <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+                        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-300"><i class="fa-solid fa-pen-to-square"></i></div>
+                        <h3 class="text-2xl font-bold">Ejemplo Resuelto Paso a Paso</h3>
+                    </div>
+                    <div class="math-container mb-6 text-xl text-center">
+                        $$ \int \frac{3x + 11}{x^2 - x - 6} dx $$
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-pink-500">
+                            <h4 class="font-bold text-pink-300">Paso 1: Factorizar el denominador</h4>
+                            <p class="math-container text-center">$$ x^2 - x - 6 = (x - 3)(x + 2) $$</p>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-purple-500">
+                            <h4 class="font-bold text-purple-300">Paso 2: Establecer la descomposición</h4>
+                            <p class="math-container text-center">$$ \frac{3x + 11}{(x - 3)(x + 2)} = \frac{A}{x - 3} + \frac{B}{x + 2} $$</p>
+                            <p class="math-container text-center mt-2">$$ 3x + 11 = A(x + 2) + B(x - 3) $$</p>
+                        </div>
+                        
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-blue-500">
+                            <h4 class="font-bold text-blue-300">Paso 3: Encontrar A y B</h4>
+                            <p class="text-sm mt-1 mb-2">Evaluamos valores convenientes para $x$:</p>
+                            <ul class="text-center text-gray-300">
+                                <li>Si $x = -2$: $3(-2) + 11 = A(0) + B(-2 - 3) \implies 5 = -5B \implies \mathbf{B = -1}$</li>
+                                <li>Si $x = 3$: $3(3) + 11 = A(3 + 2) + B(0) \implies 20 = 5A \implies \mathbf{A = 4}$</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white/5 p-4 rounded-lg border-l-4 border-green-500">
+                            <h4 class="font-bold text-green-300">Paso 4: Integrar las fracciones parciales</h4>
+                            <p class="math-container text-center">$$ \int \left( \frac{4}{x - 3} - \frac{1}{x + 2} \right) dx $$</p>
+                            <p class="math-container text-center font-bold text-lg text-yellow-300">$$ = 4\ln|x - 3| - \ln|x + 2| + C $$</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 rounded-2xl border-t-4 border-t-pink-500">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-300"><i class="fa-solid fa-chart-area"></i></div>
+                        <h3 class="text-2xl font-bold">Aplicación: Área entre curvas</h3>
+                    </div>
+                    <p class="mb-4">Hallar el área de la región comprendida entre la curva $y = \frac{1}{x^2 - 1}$, el eje $x$, de $x=2$ a $x=3$.</p>
+                    
+                    <div class="bg-black/20 p-4 rounded-lg">
+                        <p class="text-sm text-gray-300 mb-2"><strong>Descomposición:</strong> $\frac{1}{(x-1)(x+1)} = \frac{A}{x-1} + \frac{B}{x+1} \implies 1 = A(x+1) + B(x-1)$</p>
+                        <p class="text-sm text-gray-300 mb-4">Si $x=1 \implies A = 1/2$. Si $x=-1 \implies B = -1/2$.</p>
+                        
+                        <p class="math-container text-center text-lg">
+                            $$ A = \int_{2}^{3} \left( \frac{1/2}{x-1} - \frac{1/2}{x+1} \right) dx = \frac{1}{2} \left[ \ln|x-1| - \ln|x+1| \right]_2^3 = \frac{1}{2} \left[ \ln\left|\frac{x-1}{x+1}\right| \right]_2^3 $$
+                        </p>
+                        <p class="math-container text-center text-yellow-300 font-bold mt-4 text-xl bg-black/30 p-2 rounded">
+                            $$ A = \frac{1}{2} \left( \ln\left(\frac{2}{4}\right) - \ln\left(\frac{1}{3}\right) \right) = \frac{1}{2} \ln\left(\frac{1/2}{1/3}\right) = \frac{1}{2}\ln\left(\frac{3}{2}\right) \approx 0.202 \text{ u}^2 $$
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        function showSection(sectionId) {
+            // Esconder todas las secciones
+            const sections = document.querySelectorAll('.section-content');
+            sections.forEach(sec => {
+                sec.classList.remove('active');
+            });
+
+            // Quitar clase activa de todos los links
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Mostrar la sección destino
+            const target = document.getElementById(sectionId);
+            if(target) {
+                target.classList.add('active');
+                
+                // Forzar re-renderizado de MathJax para garantizar que las ecuaciones
+                // no se desborden y mantengan proporciones después de ocultar/mostrar (Display block flex fix)
+                if(window.MathJax) {
+                    MathJax.typesetPromise([target]).then(() => {
+                        console.log('MathJax re-rendered for ' + sectionId);
+                    }).catch((err) => console.log('MathJax error: ', err.message));
+                }
+            }
+
+            // Añadir clase activa al link de navegación clickeado
+            const activeLink = document.getElementById('nav-' + sectionId);
+            if(activeLink) {
+                activeLink.classList.add('active');
+            }
+
+            // Scroll suave hacia arriba en el contenedor principal
+            document.querySelector('main').scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Esperar a que todo cargue para renderizar la primera vez garantizando un display correcto.
+        window.addEventListener('load', () => {
+            if(window.MathJax) {
+                MathJax.typesetPromise().then(() => {
+                    console.log('Initial MathJax rendered');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
